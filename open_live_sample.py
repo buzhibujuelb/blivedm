@@ -4,12 +4,22 @@ import asyncio
 import blivedm
 import blivedm.models.open_live as open_models
 import blivedm.models.web as web_models
+import socket
+
+def send(bmsg):
+# 创建一个socket:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 建立连接:
+    s.connect(('192.168.6.177', 6667))
+    s.send(bmsg.encode('utf-8'))
+    s.close()
+
 
 # 在开放平台申请的开发者密钥
 ACCESS_KEY_ID = ''
-ACCESS_KEY_SECRET = ''
+ACCESS_KEY_SECRET = '2'
 # 在开放平台创建的项目ID
-APP_ID = 0
+APP_ID = 1
 # 主播身份码
 ROOM_OWNER_AUTH_CODE = ''
 
@@ -42,18 +52,23 @@ async def run_single_client():
         await client.stop_and_close()
 
 
+wang = "bbuzhibujuelllll"
+
 class MyHandler(blivedm.BaseHandler):
     def _on_heartbeat(self, client: blivedm.BLiveClient, message: web_models.HeartbeatMessage):
         print(f'[{client.room_id}] 心跳')
+#        send(":" + wang +"!" + wang + "@" + wang  + ".tmi.twitch.tv PRIVMSG " + "#bbuzhibujuelllll :" + "hot" + str(message.popularity))
 
     def _on_open_live_danmaku(self, client: blivedm.OpenLiveClient, message: open_models.DanmakuMessage):
         print(f'[{message.room_id}] {message.uname}：{message.msg}')
+        send(":" + message.uname +"!" + message.uname + "@" + message.uname + ".tmi.twitch.tv PRIVMSG  " + "#bbuzhibujuelllll :"+ message.msg + "\r\n")
 
     def _on_open_live_gift(self, client: blivedm.OpenLiveClient, message: open_models.GiftMessage):
         coin_type = '金瓜子' if message.paid else '银瓜子'
         total_coin = message.price * message.gift_num
         print(f'[{message.room_id}] {message.uname} 赠送{message.gift_name}x{message.gift_num}'
               f' （{coin_type}x{total_coin}）')
+        send(":" + message.uname +"!" + message.uname + "@" + message.uname + ".tmi.twitch.tv PRIVMSG  " + "#bbuzhibujuelllll :"+ "give " + message.gift_name + "x" + message.gift_num + "\r\n")
 
     def _on_open_live_buy_guard(self, client: blivedm.OpenLiveClient, message: open_models.GuardBuyMessage):
         print(f'[{message.room_id}] {message.user_info.uname} 购买 大航海等级={message.guard_level}')
@@ -70,6 +85,7 @@ class MyHandler(blivedm.BaseHandler):
 
     def _on_open_live_like(self, client: blivedm.OpenLiveClient, message: open_models.LikeMessage):
         print(f'[{message.room_id}] {message.uname} 点赞')
+        send(":" + message.uname +"!" + message.uname + "@" + message.uname + ".tmi.twitch.tv PRIVMSG  " + "#bbuzhibujuelllll :"+ "给你点赞啦" + "\r\n")
 
 
 if __name__ == '__main__':
